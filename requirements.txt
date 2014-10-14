@@ -1,0 +1,5 @@
+Django==1.6
+argparse==1.2.1
+django-cas==0.9.1
+requests==2.4.1
+wsgiref==0.1.2
