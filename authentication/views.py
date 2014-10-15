@@ -59,25 +59,14 @@ def login(request):
             request.session['service'] = service
             request.session['ticket'] = service_ticket
 
+            headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain",
+               "User-Agent": "python"}
+            payload = urllib.urlencode({'service': service, 'ticket': 'service_ticket'})
+            connection = httplib.HTTPSConnection(settings.CAS_HOST)
+            connection.request('POST', settings.REST_VALIDATE, payload, headers)
+            response = connection.getresponse()
+            answer = response.read()
+            messages.add_message(request, messages.INFO, 'Service ticket validated')
             return render_to_response("dashboard.html", locals(), context_instance=RequestContext(request))
     form = LoginForm()
     return render_to_response("login.html", locals(), context_instance=RequestContext(request))
-
-
-def validate(request):
-    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain",
-               "User-Agent": "python"}
-    payload = urllib.urlencode({'service': request.session['service'], 'ticket': request.session['ticket']})
-    connection = httplib.HTTPSConnection(settings.CAS_HOST)
-    connection.request('POST', settings.REST_VALIDATE, payload, headers)
-    response = connection.getresponse()
-    answer = response.read()
-    import sys
-
-    sys.stderr.write("******************************")
-    sys.stderr.write("XML Answer: {0}".format(response.status))
-    sys.stderr.write("XML Answer: {0}".format(response.reason))
-    sys.stderr.write("******************************")
-
-    messages.add_message(request, messages.INFO, 'Service ticket validated')
-    return render_to_response("dashboard.html", locals(), context_instance=RequestContext(request))
